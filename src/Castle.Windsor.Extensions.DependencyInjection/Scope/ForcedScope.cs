@@ -19,19 +19,36 @@ namespace Castle.Windsor.Extensions.DependencyInjection.Scope
 	/// <summary>
 	/// Forces a specific <see name="ExtensionContainerScope" /> for 'using' block. In .NET scope is tied to an instance of <see name="System.IServiceProvider" /> not a thread or async context
 	/// </summary>
+	/// <remarks>
+	///		<see href="https://github.com/castleproject/Windsor/issues/646" />
+	/// </remarks>
 	internal class ForcedScope : IDisposable
 	{
 		private readonly ExtensionContainerScopeBase scope;
 		private readonly ExtensionContainerScopeBase previousScope;
+
 		internal ForcedScope(ExtensionContainerScopeBase scope)
 		{
-			previousScope = ExtensionContainerScopeCache.Current;
+			if (ExtensionContainerScopeCache.HasContext)
+			{
+				previousScope = ExtensionContainerScopeCache.Current;
+			}
+			else
+			{
+				previousScope = null;
+			}
+
 			this.scope = scope;
 			ExtensionContainerScopeCache.Current = scope;
 		}
+
 		public void Dispose()
 		{
-			if(ExtensionContainerScopeCache.Current != scope) return;
+			if (ExtensionContainerScopeCache.Current != scope)
+			{
+				return;
+			}
+
 			ExtensionContainerScopeCache.Current = previousScope;
 		}
 	}
